@@ -21,18 +21,18 @@ export class AuthController {
 
     res.cookie('jwt', accessToken, {
       httpOnly: true,
-      secure: false, 
-      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'none',
       maxAge: 24 * 60 * 60 * 1000,
     });
 
     return res.json({ message: 'Login successful', user });
   }
 
-   @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Get('profile')
   getProfile(@Req() req) {
-    return req.user; 
+    return req.user;
   }
 
   @Post('register')
@@ -49,7 +49,11 @@ export class AuthController {
 
   @Post('logout')
   logout(@Res({ passthrough: true }) res: Response) {
-    res.clearCookie('jwt', { httpOnly: true, sameSite: 'lax' });
+    res.clearCookie('jwt', {
+      httpOnly: true,
+      sameSite: 'none',
+      secure: process.env.NODE_ENV === 'production',
+    });
     return { ok: true, message: 'Logged out successfully' };
   }
 }
